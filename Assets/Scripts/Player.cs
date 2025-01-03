@@ -26,8 +26,8 @@ public class Player : MonoBehaviour
     [SerializeField]
     private GameObject _playerShield;
 
-    private SpawnManager _spawnManager;
-    private UIManager _uiManager;
+    [SerializeField]
+    private List<GameObject> _playerEngines;
 
     public UnityEvent onPlayerDeath;
 
@@ -36,7 +36,7 @@ public class Player : MonoBehaviour
     {
         _powerupCoroutines = new Dictionary<string, Coroutine>();
         transform.position = new Vector3(0, 0, 0);
-        _spawnManager = GameObject.Find("SpawnManager").GetComponent<SpawnManager>();
+        //_spawnManager = GameObject.Find("SpawnManager").GetComponent<SpawnManager>();
     }
 
     // Update is called once per frame
@@ -90,6 +90,8 @@ public class Player : MonoBehaviour
             return;
         }
         _lives--;
+        
+
         GameObject.Find("Canvas").GetComponent<UIManager>().UpdateLives(_lives);
 
         if (_lives <= 0) 
@@ -97,7 +99,12 @@ public class Player : MonoBehaviour
             _powerupCoroutines.Clear();
             onPlayerDeath.Invoke();
             Destroy(gameObject);
+            return;
         }
+        //Engine VFX
+        int engineIndex = Random.Range(0, _playerEngines.Count);
+        _playerEngines[engineIndex].SetActive(true);
+        _playerEngines.RemoveAt(engineIndex);
     }
 
     public void StartPowerup(string powerupName, float powerupDuration) 
