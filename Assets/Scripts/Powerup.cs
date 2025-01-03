@@ -11,12 +11,6 @@ public class Powerup : MonoBehaviour
     [SerializeField]
     private float duration = 5;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
     // Update is called once per frame
     void Update()
     {

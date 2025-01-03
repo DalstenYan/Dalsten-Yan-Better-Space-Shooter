@@ -28,8 +28,7 @@ public class SpawnManager : MonoBehaviour
     //Used for video but not here
     private bool _stopSpawning;
 
-    // Start is called before the first frame update
-    void Start()
+    public void StartSpawning() 
     {
         StartCoroutine(SpawnEnemy());
         StartCoroutine(SpawnPowerup());
@@ -38,6 +37,7 @@ public class SpawnManager : MonoBehaviour
     //Spawn game objects every 5 seconds with Coroutines.
     IEnumerator SpawnEnemy() 
     {
+        yield return new WaitForSeconds(3.0f);
         //Create Enemy based on prefab
         var newEnemy = Instantiate(_enemyPrefab, RandomTopPosition(), Quaternion.identity);
         newEnemy.transform.parent = _enemyParent;
@@ -49,6 +49,8 @@ public class SpawnManager : MonoBehaviour
 
     IEnumerator SpawnPowerup() 
     {
+        yield return new WaitForSeconds(8.0f);
+
         //Find random powerup and create powerup based on prefabs
         int randPowerupIndex = Random.Range(0, _powerupPrefabs.Count);
         var powerup = Instantiate(_powerupPrefabs[randPowerupIndex], RandomTopPosition(), Quaternion.identity);
