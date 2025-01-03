@@ -6,11 +6,15 @@ public class Enemy : MonoBehaviour
 {
     [SerializeField]
     private float _speed = 4.0f;
+    [SerializeField]
+    private int _scoreValue = 10;
+
+    private Animator _enemyAnimator;
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        _enemyAnimator = GetComponent<Animator>();
     }
 
     // Update is called once per frame
@@ -33,15 +37,27 @@ public class Enemy : MonoBehaviour
             {
                 player.Damage();
             }
-            
-            Destroy(gameObject);
+            EnemyDeath();
         }
 
         if (collision.CompareTag("Laser")) 
         {
             Destroy(collision.gameObject);
-            Destroy(gameObject);
+            GameObject.Find("Canvas").GetComponent<UIManager>().AddScore(_scoreValue);
+            EnemyDeath();
         }
+    }
+
+    public void EnemyDeath() 
+    {
+        Freeze();
+        GetComponent<BoxCollider2D>().enabled = false;
+        _enemyAnimator.SetTrigger("EnemyDead");
+    }
+
+    public void AnimationEvent() 
+    {
+        Destroy(gameObject);
     }
 
     public void Freeze() 

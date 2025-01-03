@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.Events;
 public class Player : MonoBehaviour
 {
     //Variables
@@ -27,7 +27,9 @@ public class Player : MonoBehaviour
     private GameObject _playerShield;
 
     private SpawnManager _spawnManager;
+    private UIManager _uiManager;
 
+    public UnityEvent onPlayerDeath;
 
     private Dictionary<string, Coroutine> _powerupCoroutines;
     private void Start()
@@ -48,7 +50,7 @@ public class Player : MonoBehaviour
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
 
-        transform.Translate((_powerupCoroutines.ContainsKey("SpeedPowerup") ? _powerupSpeed : _speed) * Time.deltaTime * new Vector3(horizontalInput, verticalInput, 0));
+        transform.Translate((IsPowerupActive("SpeedPowerup") ? _powerupSpeed : _speed) * Time.deltaTime * new Vector3(horizontalInput, verticalInput, 0));
         //optimize this with GameObject 3Dcolliders later
 
         //Clamping Vector3 values so that the y positon stays in between 0 and -3.8f
@@ -73,7 +75,7 @@ public class Player : MonoBehaviour
         {
             _canFire = Time.time + _fireRate;
 
-            Instantiate(_powerupCoroutines.ContainsKey("TripleShotPowerup") ? _tripleShotPrefab : _laserPrefab, 
+            Instantiate(IsPowerupActive("TripleShotPowerup") ? _tripleShotPrefab : _laserPrefab, 
                 transform.position + new Vector3(0, 0.8f, 0), Quaternion.identity) ;
         }
     }
@@ -88,11 +90,12 @@ public class Player : MonoBehaviour
             return;
         }
         _lives--;
+        GameObject.Find("Canvas").GetComponent<UIManager>().UpdateLives(_lives);
 
         if (_lives <= 0) 
         {
-            _spawnManager.OnPlayerDeath();
             _powerupCoroutines.Clear();
+            onPlayerDeath.Invoke();
             Destroy(gameObject);
         }
     }
@@ -126,14 +129,19 @@ public class Player : MonoBehaviour
         else { Debug.Log(powerupName + " Started!"); }
 
         //In both edge cases, the coroutine will be started (or restarted) and assigned to the dictionary
-        _powerupCoroutines[powerupName] = StartCoroutine(PowerupTimer(powerupName));
+        _powerupCoroutines[powerupName] = StartCoroutine(PowerupTimer(powerupName, powerupDuration));
     }
 
     private IEnumerator PowerupTimer(string powerupName, float powerupDuration = 5) 
     {
-
         yield return new WaitForSeconds(powerupDuration);
         Debug.Log(powerupName + " Ended!");
         _powerupCoroutines.Remove(powerupName);
     }
+
+    public bool IsPowerupActive(string powerupName) 
+    {
+        return _powerupCoroutines.ContainsKey(powerupName);
+    }
+
 }
