@@ -50,6 +50,7 @@ public class Enemy : MonoBehaviour
 
     public void EnemyDeath() 
     {
+        GetComponent<ExplosionVFXandSFX>().PlayExplosion();
         Freeze();
         GetComponent<BoxCollider2D>().enabled = false;
         _enemyAnimator.SetTrigger("EnemyDead");
