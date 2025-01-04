@@ -9,7 +9,7 @@ public class Powerup : MonoBehaviour
     [SerializeField]
     private string _powerupName;
     [SerializeField]
-    private float duration = 5;
+    private float _duration = 5;
 
     // Update is called once per frame
     void Update()
@@ -29,7 +29,7 @@ public class Powerup : MonoBehaviour
     {
         if (collision.CompareTag("Player"))
         {
-            collision.GetComponent<Player>().StartPowerup(_powerupName, duration);
+            collision.GetComponent<Player>().StartPowerup(_powerupName, _duration);
             Destroy(gameObject);
         }
     }

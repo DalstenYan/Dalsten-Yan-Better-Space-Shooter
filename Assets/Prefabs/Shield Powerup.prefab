@@ -136,7 +136,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _speed: 3
   _powerupName: ShieldPowerup
-  duration: -1
+  _duration: -1
 --- !u!95 &2838995314002049517
 Animator:
   serializedVersion: 3

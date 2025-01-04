@@ -25,10 +25,20 @@ public class Player : MonoBehaviour
     [Header("Player VFX")]
     [SerializeField]
     private GameObject _playerShield;
-
     [SerializeField]
     private List<GameObject> _playerEngines;
+    
+    [Header("Sound Effects")]
+    [SerializeField]
+    private AudioClip _laserSoundEffect;
+    [SerializeField]
+    private AudioClip _playerDamageEffect;
+    [SerializeField]
+    private AudioClip _shieldPowerDownEffect;
+    [SerializeField]
+    private List<AudioClip> _pickupSoundEffects;
 
+    private AudioSource _audioSource;
     public UnityEvent onPlayerDeath;
 
     private Dictionary<string, Coroutine> _powerupCoroutines;
@@ -36,6 +46,7 @@ public class Player : MonoBehaviour
     {
         _powerupCoroutines = new Dictionary<string, Coroutine>();
         transform.position = new Vector3(0, 0, 0);
+        _audioSource = GetComponent<AudioSource>();
         //_spawnManager = GameObject.Find("SpawnManager").GetComponent<SpawnManager>();
     }
 
@@ -68,11 +79,14 @@ public class Player : MonoBehaviour
 
     void ShootLaser() 
     {
+
         //This code is basically taking the current numerical value time (e.g 1) and adding the cooldown float to the current time
         //and thats when we can fire next. If a cooldown is .15 seconds, you will only be able to fire again when time reaches 1.15
         //so the _canFire keeps track of the next Time.time value that you can fire and is after the cooldown.
         if (Input.GetKeyDown(KeyCode.Space) && Time.time > _canFire)
         {
+            PlaySound(_laserSoundEffect);
+
             _canFire = Time.time + _fireRate;
 
             Instantiate(IsPowerupActive("TripleShotPowerup") ? _tripleShotPrefab : _laserPrefab, 
@@ -80,25 +94,30 @@ public class Player : MonoBehaviour
         }
     }
 
+    [ContextMenu("Hurt")]
     public void Damage() 
     {
         if (_powerupCoroutines.ContainsKey("ShieldPowerup")) 
         {
             _powerupCoroutines.Remove("ShieldPowerup");
             _playerShield.SetActive(false);
+            PlaySound(_shieldPowerDownEffect);
             Debug.Log("Shield Used and Broke!");
             return;
         }
         _lives--;
-        
+        PlaySound(_playerDamageEffect);
 
         GameObject.Find("Canvas").GetComponent<UIManager>().UpdateLives(_lives);
 
         if (_lives <= 0) 
         {
+            //first stop and explode
+            _speed = 0;
             _powerupCoroutines.Clear();
-            onPlayerDeath.Invoke();
-            Destroy(gameObject);
+            StopAllCoroutines();
+            GetComponent<ExplosionVFXandSFX>().PlayExplosion();
+            StartCoroutine(PlayerDeath());
             return;
         }
         //Engine VFX
@@ -107,8 +126,25 @@ public class Player : MonoBehaviour
         _playerEngines.RemoveAt(engineIndex);
     }
 
+    IEnumerator PlayerDeath() 
+    {
+        //disable all child sprites first
+        yield return new WaitForSeconds(.3f);
+        for (int i = 0; i < transform.childCount; i++) 
+        {
+            transform.GetChild(i).gameObject.SetActive(false);
+        }
+
+        //then invoke player death for other scripts and then destroy self
+        yield return new WaitForSeconds(.4f);
+        onPlayerDeath.Invoke();
+        Destroy(gameObject);
+    }
+
     public void StartPowerup(string powerupName, float powerupDuration) 
     {
+        PlaySound(GetPowerupSFX(powerupName));
+
         //Infinite durration powerups get assigned to null, and will activate a VFX for the player if needed.
         //For a shield powerup, we will assign a null value instead and just add the key to the dictionary since it doesn't rely on a timer.
         if (powerupDuration <= -1) //if the duration is supposed to be infinite
@@ -151,4 +187,21 @@ public class Player : MonoBehaviour
         return _powerupCoroutines.ContainsKey(powerupName);
     }
 
+    private AudioClip GetPowerupSFX(string powerupName) 
+    {
+        //Multiply Score Powerup
+        if (powerupName.Contains("ScorePowerup")) 
+        {
+            return _pickupSoundEffects[1];
+        }
+
+        //Default SFX
+        return _pickupSoundEffects[0];
+    }
+
+    private void PlaySound(AudioClip clip) 
+    {
+        _audioSource.clip = clip;
+        _audioSource.Play();
+    }
 }
