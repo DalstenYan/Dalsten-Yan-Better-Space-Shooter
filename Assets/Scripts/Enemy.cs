@@ -2,31 +2,57 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Enemy : MonoBehaviour
+public class Enemy : FlyingUnit
 {
-    [SerializeField]
-    private float _speed = 4.0f;
     [SerializeField]
     private int _scoreValue = 10;
     [SerializeField]
-    private GameObject _enemyLaserPrefab;
+    private int _maxFireRate;
 
     private Animator _enemyAnimator;
 
     // Start is called before the first frame update
     void Start()
     {
+        SetRandomFireRate();
+        Debug.Log("cooldown time set: " + _cooldown + " seconds");
         _enemyAnimator = GetComponent<Animator>();
     }
 
-    // Update is called once per frame
-    void Update()
+    protected override void CalculateMovement() 
     {
         transform.Translate(_speed * Time.deltaTime * Vector3.down);
 
-        if (transform.position.y <= -5.41f) 
+        if (transform.position.y <= -5.41f)
         {
             transform.position = SpawnManager.RandomTopPosition();
+        }
+    }
+
+    protected override bool ShootLaser()
+    {
+        if (base.ShootLaser()) 
+        {
+            //Debug.Log("cooldown time just now: " + _cooldown + " seconds");
+
+            SetRandomFireRate();
+            Debug.Log("cooldown time set: " + _cooldown + " seconds");
+            Instantiate(_laserPrefab, transform.position + new Vector3(0, -0.8f, 0), Quaternion.identity);
+        }
+        return true;
+    }
+
+    private void SetRandomFireRate() 
+    {
+        _cooldown = Random.Range((int)_fireRate, (_maxFireRate + 1));
+    }
+
+    public override void TakeDamage() 
+    {
+        _lives--;
+        if (_lives <= 0) 
+        {
+            StartCoroutine(OnDeath());
         }
     }
 
@@ -37,39 +63,25 @@ public class Enemy : MonoBehaviour
             var player = collision.gameObject.GetComponent<Player>();
             if (player != null) 
             {
-                player.Damage();
+                player.TakeDamage();
             }
-            EnemyDeath();
+            TakeDamage();
         }
 
         if (collision.CompareTag("Laser")) 
         {
             Destroy(collision.gameObject);
             GameObject.Find("Canvas").GetComponent<UIManager>().AddScore(_scoreValue);
-            EnemyDeath();
+            TakeDamage();
         }
     }
 
-    public void FireLaser() 
-    {
-
-    }
-
-    public void EnemyDeath() 
+    protected override IEnumerator OnDeath() 
     {
         GetComponent<ExplosionVFXandSFX>().PlayExplosion();
         Freeze();
         GetComponent<BoxCollider2D>().enabled = false;
         _enemyAnimator.SetTrigger("EnemyDead");
-    }
-
-    public void AnimationEvent() 
-    {
-        Destroy(gameObject);
-    }
-
-    public void Freeze() 
-    {
-        _speed = 0;
+        yield return null;
     }
 }

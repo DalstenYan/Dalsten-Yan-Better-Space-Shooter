@@ -2,23 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-public class Player : MonoBehaviour
+public class Player : FlyingUnit
 {
     //Variables
     [Header("Variable Stats")]
     [SerializeField]
-    private int _lives = 3;
-    [SerializeField]
-    private float _speed = 5f;
-    [SerializeField]
     private float _powerupSpeed = 8.5f;
-    [SerializeField]
-    private float _fireRate = 0.5f;
-    private float _canFire = -1f;
 
     [Header("Prefabs")]
-    [SerializeField]
-    private GameObject _laserPrefab;
     [SerializeField]
     private GameObject _tripleShotPrefab;
 
@@ -50,13 +41,7 @@ public class Player : MonoBehaviour
         //_spawnManager = GameObject.Find("SpawnManager").GetComponent<SpawnManager>();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        CalculateMovement();
-        ShootLaser();
-    }
-    void CalculateMovement ()
+    protected override void CalculateMovement ()
     {
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
@@ -77,25 +62,26 @@ public class Player : MonoBehaviour
         }
     }
 
-    void ShootLaser() 
+    protected override bool ShootLaser() 
     {
-
+        if (!Input.GetKeyDown(KeyCode.Space))
+            return false;
+        // && Time.time > _canFire
         //This code is basically taking the current numerical value time (e.g 1) and adding the cooldown float to the current time
         //and thats when we can fire next. If a cooldown is .15 seconds, you will only be able to fire again when time reaches 1.15
         //so the _canFire keeps track of the next Time.time value that you can fire and is after the cooldown.
-        if (Input.GetKeyDown(KeyCode.Space) && Time.time > _canFire)
+        if (base.ShootLaser())
         {
-            PlaySound(_laserSoundEffect);
 
-            _canFire = Time.time + _fireRate;
+            PlaySound(_laserSoundEffect);
 
             Instantiate(IsPowerupActive("TripleShotPowerup") ? _tripleShotPrefab : _laserPrefab, 
                 transform.position + new Vector3(0, 0.8f, 0), Quaternion.identity) ;
         }
+        return true;
     }
 
-    [ContextMenu("Hurt")]
-    public void Damage() 
+    public override void TakeDamage() 
     {
         if (_powerupCoroutines.ContainsKey("ShieldPowerup")) 
         {
@@ -113,11 +99,12 @@ public class Player : MonoBehaviour
         if (_lives <= 0) 
         {
             //first stop and explode
-            _speed = 0;
+            GetComponent<BoxCollider2D>().enabled = false;
+            Freeze();
             _powerupCoroutines.Clear();
             StopAllCoroutines();
             GetComponent<ExplosionVFXandSFX>().PlayExplosion();
-            StartCoroutine(PlayerDeath());
+            StartCoroutine(OnDeath());
             return;
         }
         //Engine VFX
@@ -126,7 +113,7 @@ public class Player : MonoBehaviour
         _playerEngines.RemoveAt(engineIndex);
     }
 
-    IEnumerator PlayerDeath() 
+    protected override IEnumerator OnDeath() 
     {
         //disable all child sprites first
         yield return new WaitForSeconds(.3f);
@@ -197,6 +184,15 @@ public class Player : MonoBehaviour
 
         //Default SFX
         return _pickupSoundEffects[0];
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.CompareTag("EnemyLaser")) 
+        {
+            TakeDamage();
+            Destroy(collision.gameObject);
+        }
     }
 
     private void PlaySound(AudioClip clip) 
