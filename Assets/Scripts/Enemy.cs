@@ -8,6 +8,8 @@ public class Enemy : MonoBehaviour
     private float _speed = 4.0f;
     [SerializeField]
     private int _scoreValue = 10;
+    [SerializeField]
+    private GameObject _enemyLaserPrefab;
 
     private Animator _enemyAnimator;
 
@@ -46,6 +48,11 @@ public class Enemy : MonoBehaviour
             GameObject.Find("Canvas").GetComponent<UIManager>().AddScore(_scoreValue);
             EnemyDeath();
         }
+    }
+
+    public void FireLaser() 
+    {
+
     }
 
     public void EnemyDeath() 
