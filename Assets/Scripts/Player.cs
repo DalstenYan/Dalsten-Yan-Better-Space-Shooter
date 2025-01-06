@@ -29,6 +29,10 @@ public class Player : FlyingUnit
     [SerializeField]
     private List<AudioClip> _pickupSoundEffects;
 
+    [SerializeField]
+    private bool _takeDamageOnce;
+
+    private Coroutine hitCouroutine;
     private AudioSource _audioSource;
     public UnityEvent onPlayerDeath;
 
@@ -62,15 +66,18 @@ public class Player : FlyingUnit
         }
     }
 
-    protected override bool ShootLaser() 
+    protected override void ShootLaser() 
     {
-        if (!Input.GetKeyDown(KeyCode.Space))
-            return false;
+        if (!Input.GetKey(KeyCode.Space)) 
+        {
+            return;
+        }
+        Debug.Log("Held down");
         // && Time.time > _canFire
         //This code is basically taking the current numerical value time (e.g 1) and adding the cooldown float to the current time
         //and thats when we can fire next. If a cooldown is .15 seconds, you will only be able to fire again when time reaches 1.15
         //so the _canFire keeps track of the next Time.time value that you can fire and is after the cooldown.
-        if (base.ShootLaser())
+        if (CalculateCooldown())
         {
 
             PlaySound(_laserSoundEffect);
@@ -78,7 +85,6 @@ public class Player : FlyingUnit
             Instantiate(IsPowerupActive("TripleShotPowerup") ? _tripleShotPrefab : _laserPrefab, 
                 transform.position + new Vector3(0, 0.8f, 0), Quaternion.identity) ;
         }
-        return true;
     }
 
     public override void TakeDamage() 
@@ -87,18 +93,18 @@ public class Player : FlyingUnit
         {
             _powerupCoroutines.Remove("ShieldPowerup");
             _playerShield.SetActive(false);
-            PlaySound(_shieldPowerDownEffect);
+            _audioSource.PlayOneShot(_shieldPowerDownEffect);
             Debug.Log("Shield Used and Broke!");
             return;
         }
+        
+        //Update Lives
         _lives--;
-        PlaySound(_playerDamageEffect);
+        GameObject.Find("Canvas").GetComponent<UIManager>().UpdateLives(_lives < 0 ? 0 : _lives);
 
-        GameObject.Find("Canvas").GetComponent<UIManager>().UpdateLives(_lives);
-
+        //Check for Death
         if (_lives <= 0) 
         {
-            //first stop and explode
             GetComponent<BoxCollider2D>().enabled = false;
             Freeze();
             _powerupCoroutines.Clear();
@@ -107,10 +113,14 @@ public class Player : FlyingUnit
             StartCoroutine(OnDeath());
             return;
         }
-        //Engine VFX
+
+        //Play Visual and Audio Effects
+        PlaySound(_playerDamageEffect);
         int engineIndex = Random.Range(0, _playerEngines.Count);
         _playerEngines[engineIndex].SetActive(true);
         _playerEngines.RemoveAt(engineIndex);
+
+        GetComponent<BoxCollider2D>().enabled = true;
     }
 
     protected override IEnumerator OnDeath() 
@@ -188,12 +198,41 @@ public class Player : FlyingUnit
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.CompareTag("EnemyLaser")) 
+        if (collision.CompareTag("EnemyLaser"))
         {
-            TakeDamage();
-            Destroy(collision.gameObject);
+            EnemyLaserHit(collision.gameObject);
         }
     }
+
+    private void EnemyLaserHit(GameObject enemyLaser) 
+    {
+        //When both lasers should register damage
+        if (!_takeDamageOnce)
+        {
+            Destroy(enemyLaser);
+            TakeDamage();
+            return;
+        }
+
+        //Only one laser should register damage, second is deleted
+        if (hitCouroutine != null)
+        {
+            Debug.Log("Stopping Coroutine");
+            StopCoroutine(hitCouroutine);
+        }
+
+        Destroy(enemyLaser.transform.parent.gameObject);
+        hitCouroutine = StartCoroutine(AntiDoubleHit());
+
+    }
+
+    private IEnumerator AntiDoubleHit() 
+    {
+        yield return null;
+        hitCouroutine = null;
+        TakeDamage();
+    }
+
 
     private void PlaySound(AudioClip clip) 
     {

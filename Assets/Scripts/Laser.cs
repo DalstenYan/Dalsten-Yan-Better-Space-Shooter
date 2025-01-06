@@ -13,13 +13,19 @@ public class Laser : MonoBehaviour
         
     }
 
+
     // Update is called once per frame
     void Update()
     {
         transform.Translate(_speed * Time.deltaTime * Vector3.up);
-        if (transform.position.y >= 7) 
+        if (transform.position.y >= 7 || transform.position.y <= -5) 
         {
-            Destroy(transform.parent != null ? transform.parent.gameObject : gameObject);
+            DestroyLasers();
         }
+    }
+
+    public void DestroyLasers() 
+    {
+        Destroy(transform.parent != null ? transform.parent.gameObject : gameObject);
     }
 }

@@ -15,12 +15,12 @@ PrefabInstance:
     - target: {fileID: 2017035853897786324, guid: 0f3d2591e1131b34a9b0069d182c2563,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 4.66736
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2017035853897786324, guid: 0f3d2591e1131b34a9b0069d182c2563,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 3.2437158
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2017035853897786324, guid: 0f3d2591e1131b34a9b0069d182c2563,
         type: 3}
@@ -71,12 +71,12 @@ PrefabInstance:
     - target: {fileID: 2017035853897786328, guid: 0f3d2591e1131b34a9b0069d182c2563,
         type: 3}
       propertyPath: _speed
-      value: -8
+      value: -7
       objectReference: {fileID: 0}
     - target: {fileID: 2017035853897786331, guid: 0f3d2591e1131b34a9b0069d182c2563,
         type: 3}
       propertyPath: m_Name
-      value: Laser
+      value: Enemy Laser
       objectReference: {fileID: 0}
     - target: {fileID: 2017035853897786331, guid: 0f3d2591e1131b34a9b0069d182c2563,
         type: 3}

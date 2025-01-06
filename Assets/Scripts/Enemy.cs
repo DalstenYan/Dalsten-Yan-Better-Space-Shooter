@@ -5,16 +5,16 @@ using UnityEngine;
 public class Enemy : FlyingUnit
 {
     [SerializeField]
-    private int _scoreValue = 10;
-    [SerializeField]
     private int _maxFireRate;
+    [SerializeField]
+    private int _scoreValue = 10;
+    
 
     private Animator _enemyAnimator;
 
     // Start is called before the first frame update
     void Start()
     {
-        SetRandomFireRate();
         Debug.Log("cooldown time set: " + _cooldown + " seconds");
         _enemyAnimator = GetComponent<Animator>();
     }
@@ -29,17 +29,13 @@ public class Enemy : FlyingUnit
         }
     }
 
-    protected override bool ShootLaser()
+    protected override void ShootLaser()
     {
-        if (base.ShootLaser()) 
+        if (CalculateCooldown()) 
         {
-            //Debug.Log("cooldown time just now: " + _cooldown + " seconds");
-
             SetRandomFireRate();
-            Debug.Log("cooldown time set: " + _cooldown + " seconds");
-            Instantiate(_laserPrefab, transform.position + new Vector3(0, -0.8f, 0), Quaternion.identity);
+            Instantiate(_laserPrefab, transform);
         }
-        return true;
     }
 
     private void SetRandomFireRate() 

@@ -12,18 +12,11 @@ public abstract class FlyingUnit : MonoBehaviour
     protected GameObject _laserPrefab;
     [SerializeField]
     protected float _fireRate = 0.5f;
+    [SerializeField]
     protected float _cooldown = 0;
 
     protected abstract void CalculateMovement();
-    protected virtual bool ShootLaser() 
-    {
-        if (_cooldown <= 0 && _speed > 0) 
-        {
-            _cooldown = _fireRate;
-            return true;
-        }
-        return false;
-    }
+    protected abstract void ShootLaser();
     [ContextMenu("Hurt")]
     public abstract void TakeDamage();
     protected abstract IEnumerator OnDeath();
@@ -43,5 +36,16 @@ public abstract class FlyingUnit : MonoBehaviour
     public void AnimationEvent()
     {
         Destroy(gameObject);
+    }
+
+    protected bool CalculateCooldown() 
+    {
+        if (_cooldown <= 0 && _lives > 0) 
+        {
+            _cooldown = _fireRate;
+            return true;
+        }
+        return false;
+
     }
 }
