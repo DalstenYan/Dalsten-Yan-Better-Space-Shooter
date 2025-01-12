@@ -4,6 +4,8 @@ using UnityEngine;
 
 public abstract class FlyingUnit : MonoBehaviour
 {
+    protected enum PlayerMode { Single, Multiplayer }
+
     [SerializeField]
     protected int _lives = 3;
     [SerializeField]
@@ -14,6 +16,8 @@ public abstract class FlyingUnit : MonoBehaviour
     protected float _fireRate = 0.5f;
     [SerializeField]
     protected float _cooldown = 0;
+    [SerializeField]
+    protected PlayerMode gameMode;
 
     protected abstract void CalculateMovement();
     protected abstract void ShootLaser();
@@ -22,9 +26,9 @@ public abstract class FlyingUnit : MonoBehaviour
     protected abstract IEnumerator OnDeath();
 
     // Update is called once per frame
-    void Update()
+    protected virtual void Update()
     {
-        _cooldown -= Time.deltaTime;
+        _cooldown = Mathf.Clamp(_cooldown - Time.deltaTime, 0, _cooldown);
         ShootLaser();
         CalculateMovement();
     }

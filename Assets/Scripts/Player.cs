@@ -2,8 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Interactions;
+
 public class Player : FlyingUnit
 {
+    private readonly InputDevice[] inputDevices = { Keyboard.current, Mouse.current };
+
     //Variables
     [Header("Variable Stats")]
     [SerializeField]
@@ -18,40 +23,77 @@ public class Player : FlyingUnit
     private GameObject _playerShield;
     [SerializeField]
     private List<GameObject> _playerEngines;
-    
+
     [Header("Sound Effects")]
     [SerializeField]
-    private AudioClip _laserSoundEffect;
-    [SerializeField]
-    private AudioClip _playerDamageEffect;
-    [SerializeField]
-    private AudioClip _shieldPowerDownEffect;
+    private AudioClip _laserSoundEffect, _playerDamageEffect, _shieldPowerDownEffect;
     [SerializeField]
     private List<AudioClip> _pickupSoundEffects;
 
+    //consider moving these to the existing gamemanger or a new audiomanager
+
     [SerializeField]
     private bool _takeDamageOnce;
+    [SerializeField]
+    private bool _firing;
+
+    //[SerializeField]
+    //private InputActionAsset moveset, shoot;
+    private InputActionMap player;
+    [SerializeField]
+    private InputActionAsset _playerInputAsset;
 
     private Coroutine hitCouroutine;
     private AudioSource _audioSource;
+    private Animator playerAnimator;
     public UnityEvent onPlayerDeath;
 
     private Dictionary<string, Coroutine> _powerupCoroutines;
+
+    private Vector2 moveDirection;
+
+    private void OnEnable()
+    {
+        //PlayerInput.all[0].SwitchCurrentControlScheme("KeyboardWASD", Keyboard.current);
+        //PlayerInput.all[1].SwitchCurrentControlScheme("KeyboardArrows", Keyboard.current);
+        player = _playerInputAsset.FindActionMap("Player");
+        
+    }
+
+    public void OnMove(InputAction.CallbackContext context) => moveDirection = context.ReadValue<Vector2>();
+
+    public void OnShoot(InputAction.CallbackContext context) 
+    {
+        if (context.interaction is HoldInteraction || context.interaction is PressInteraction)
+        {
+            _firing = true;
+        }
+
+        if (context.canceled) 
+        {
+            _firing = false;
+        }
+    }
+
     private void Start()
     {
+        if (gameObject.name == "Player2")
+        {
+            //GetComponent<PlayerInput>().SwitchCurrentControlScheme("KeyboardArrows", inputDevices);
+            
+        }
+
         _powerupCoroutines = new Dictionary<string, Coroutine>();
-        transform.position = new Vector3(0, 0, 0);
         _audioSource = GetComponent<AudioSource>();
+        playerAnimator = GetComponent<Animator>();
         //_spawnManager = GameObject.Find("SpawnManager").GetComponent<SpawnManager>();
     }
 
     protected override void CalculateMovement ()
     {
-        float horizontalInput = Input.GetAxis("Horizontal");
-        float verticalInput = Input.GetAxis("Vertical");
-
-        transform.Translate((IsPowerupActive("SpeedPowerup") ? _powerupSpeed : _speed) * Time.deltaTime * new Vector3(horizontalInput, verticalInput, 0));
-        //optimize this with GameObject 3Dcolliders later
+        transform.Translate((IsPowerupActive("SpeedPowerup") ? _powerupSpeed : _speed) * Time.deltaTime * moveDirection);
+        playerAnimator.SetBool("FlyingLeft", moveDirection.x < 0);
+        playerAnimator.SetBool("FlyingRight", moveDirection.x > 0);
 
         //Clamping Vector3 values so that the y positon stays in between 0 and -3.8f
         transform.position = new Vector3(transform.position.x, Mathf.Clamp(transform.position.y, -3.8f, 0), 0);
@@ -68,11 +110,8 @@ public class Player : FlyingUnit
 
     protected override void ShootLaser() 
     {
-        if (!Input.GetKey(KeyCode.Space)) 
-        {
+        if (!_firing)
             return;
-        }
-        Debug.Log("Held down");
         // && Time.time > _canFire
         //This code is basically taking the current numerical value time (e.g 1) and adding the cooldown float to the current time
         //and thats when we can fire next. If a cooldown is .15 seconds, you will only be able to fire again when time reaches 1.15

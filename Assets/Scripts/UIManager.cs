@@ -22,7 +22,7 @@ public class UIManager : MonoBehaviour
 
     private void Start()
     {
-        _player = GameObject.Find("Player").GetComponent<Player>();
+        _player = GameObject.Find("Player1").GetComponent<Player>();
     }
     public void AddScore(int score) 
     {

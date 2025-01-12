@@ -21,6 +21,7 @@ public class Enemy : FlyingUnit
 
     protected override void CalculateMovement() 
     {
+
         transform.Translate(_speed * Time.deltaTime * Vector3.down);
 
         if (transform.position.y <= -5.41f)
