@@ -35,6 +35,7 @@ public abstract class FlyingUnit : MonoBehaviour
 
     public void Freeze()
     {
+        GetComponent<BoxCollider2D>().enabled = false;
         _speed = 0;
     }
     public void AnimationEvent()

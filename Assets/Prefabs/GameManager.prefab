@@ -43,12 +43,47 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53e9855f597dabf4599fcdb1d56c13b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _score: 0
+  _gameOver: 0
   playerControlSchemes:
   - KeyboardWASD
   - KeyboardArrows
   playerPrefab: {fileID: 4442777194083198720, guid: 4156a3d2cf430c3419d95fc7b426e15c,
     type: 3}
-  _gameOver: 0
-  restart: {fileID: -7348202510051857865, guid: 24a584ce4372bf14cb0e40f26e6c0475,
-    type: 3}
-  pause: {fileID: -66068027142894480, guid: 24a584ce4372bf14cb0e40f26e6c0475, type: 3}
+  players: []
+  endCurrentGame:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+      - m_Target: {fileID: 0}
+        m_MethodName: OnGameOver
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 0}
+        m_MethodName: GameOver
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2

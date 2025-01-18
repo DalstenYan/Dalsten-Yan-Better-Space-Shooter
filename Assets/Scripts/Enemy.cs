@@ -55,9 +55,11 @@ public class Enemy : FlyingUnit
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        GameObject col = collision.gameObject;
+
         if (collision.CompareTag("Player")) 
         {
-            var player = collision.gameObject.GetComponent<Player>();
+            var player = col.GetComponent<Player>();
             if (player != null) 
             {
                 player.TakeDamage();
@@ -67,8 +69,9 @@ public class Enemy : FlyingUnit
 
         if (collision.CompareTag("Laser")) 
         {
+            col.SetActive(false);
+            GameManager.gm.AddScore(_scoreValue, Laser.GetFiredSourceName(col.name));
             Destroy(collision.gameObject);
-            GameObject.Find("Canvas").GetComponent<UIManager>().AddScore(_scoreValue);
             TakeDamage();
         }
     }

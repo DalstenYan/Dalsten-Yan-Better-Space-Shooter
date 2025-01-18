@@ -26,27 +26,23 @@ public class Player : FlyingUnit
 
     [Header("Sound Effects")]
     [SerializeField]
-    private AudioClip _laserSoundEffect, _playerDamageEffect, _shieldPowerDownEffect;
-    [SerializeField]
     private List<AudioClip> _pickupSoundEffects;
+    [SerializeField]
+    private AudioClip _laserSoundEffect, _playerDamageEffect, _shieldPowerDownEffect;
+    
 
     //consider moving these to the existing gamemanger or a new audiomanager
-
+    [Header("Options")]
     [SerializeField]
     private bool _takeDamageOnce;
     [SerializeField]
     private bool _firing;
-
-    //[SerializeField]
-    //private InputActionAsset moveset, shoot;
-    private InputActionMap player;
     [SerializeField]
     private InputActionAsset _playerInputAsset;
 
     private Coroutine hitCouroutine;
     private AudioSource _audioSource;
     private Animator playerAnimator;
-    public UnityEvent onPlayerDeath;
 
     private Dictionary<string, Coroutine> _powerupCoroutines;
 
@@ -56,7 +52,6 @@ public class Player : FlyingUnit
     {
         //PlayerInput.all[0].SwitchCurrentControlScheme("KeyboardWASD", Keyboard.current);
         //PlayerInput.all[1].SwitchCurrentControlScheme("KeyboardArrows", Keyboard.current);
-        player = _playerInputAsset.FindActionMap("Player");
         
     }
 
@@ -77,21 +72,14 @@ public class Player : FlyingUnit
 
     private void Start()
     {
-        if (gameObject.name == "Player2")
-        {
-            //GetComponent<PlayerInput>().SwitchCurrentControlScheme("KeyboardArrows", inputDevices);
-            
-        }
-
         _powerupCoroutines = new Dictionary<string, Coroutine>();
         _audioSource = GetComponent<AudioSource>();
         playerAnimator = GetComponent<Animator>();
-        //_spawnManager = GameObject.Find("SpawnManager").GetComponent<SpawnManager>();
     }
 
     protected override void CalculateMovement ()
     {
-        transform.Translate((IsPowerupActive("SpeedPowerup") ? _powerupSpeed : _speed) * Time.deltaTime * moveDirection);
+        transform.Translate((GetPowerup("SpeedPowerup") ? _powerupSpeed : _speed) * Time.deltaTime * moveDirection);
         playerAnimator.SetBool("FlyingLeft", moveDirection.x < 0);
         playerAnimator.SetBool("FlyingRight", moveDirection.x > 0);
 
@@ -121,16 +109,17 @@ public class Player : FlyingUnit
 
             PlaySound(_laserSoundEffect);
 
-            Instantiate(IsPowerupActive("TripleShotPowerup") ? _tripleShotPrefab : _laserPrefab, 
+            var createdLaser = Instantiate(GetPowerup("TripleShotPowerup") ? _tripleShotPrefab : _laserPrefab, 
                 transform.position + new Vector3(0, 0.8f, 0), Quaternion.identity) ;
+            createdLaser.name = gameObject.name + "_" + createdLaser.name;
         }
     }
 
     public override void TakeDamage() 
     {
-        if (_powerupCoroutines.ContainsKey("ShieldPowerup")) 
+        if (GetPowerup("ShieldPowerup")) 
         {
-            _powerupCoroutines.Remove("ShieldPowerup");
+            _powerupCoroutines.Remove(gameObject.name + "ShieldPowerup");
             _playerShield.SetActive(false);
             _audioSource.PlayOneShot(_shieldPowerDownEffect);
             Debug.Log("Shield Used and Broke!");
@@ -139,12 +128,11 @@ public class Player : FlyingUnit
         
         //Update Lives
         _lives--;
-        GameObject.Find("Canvas").GetComponent<UIManager>().UpdateLives(_lives < 0 ? 0 : _lives);
+        GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>().UpdateLives(_lives < 0 ? 0 : _lives, gameObject.name);
 
         //Check for Death
         if (_lives <= 0) 
         {
-            GetComponent<BoxCollider2D>().enabled = false;
             Freeze();
             _powerupCoroutines.Clear();
             StopAllCoroutines();
@@ -173,7 +161,7 @@ public class Player : FlyingUnit
 
         //then invoke player death for other scripts and then destroy self
         yield return new WaitForSeconds(.4f);
-        onPlayerDeath.Invoke();
+        GameManager.gm.PlayerDeath(gameObject);
         Destroy(gameObject);
     }
 
@@ -185,7 +173,7 @@ public class Player : FlyingUnit
         //For a shield powerup, we will assign a null value instead and just add the key to the dictionary since it doesn't rely on a timer.
         if (powerupDuration <= -1) //if the duration is supposed to be infinite
         {
-            _powerupCoroutines[powerupName] = null;
+            _powerupCoroutines[gameObject.name + powerupName] = null;
             switch (powerupName) 
             {
                 case "ShieldPowerup":
@@ -198,29 +186,9 @@ public class Player : FlyingUnit
             return;
         }
 
-        //Set an out value for the POSSIBLY existing powerup
-        //Check if the coroutine actually exists in the dictionary, if it does, stop the current coroutine
-        if (_powerupCoroutines.TryGetValue(powerupName, out Coroutine activePowerupCouroutine))
-        {
-            Debug.Log(powerupName + " Stopped & Extended!");
-            StopCoroutine(activePowerupCouroutine);
-        }
-        else { Debug.Log(powerupName + " Started!"); }
+        powerupName = gameObject.name + powerupName;
 
-        //In both edge cases, the coroutine will be started (or restarted) and assigned to the dictionary
-        _powerupCoroutines[powerupName] = StartCoroutine(PowerupTimer(powerupName, powerupDuration));
-    }
-
-    private IEnumerator PowerupTimer(string powerupName, float powerupDuration = 5) 
-    {
-        yield return new WaitForSeconds(powerupDuration);
-        Debug.Log(powerupName + " Ended!");
-        _powerupCoroutines.Remove(powerupName);
-    }
-
-    public bool IsPowerupActive(string powerupName) 
-    {
-        return _powerupCoroutines.ContainsKey(powerupName);
+        GameManager.gm.StartPlayerPowerup(powerupName, powerupDuration);
     }
 
     private AudioClip GetPowerupSFX(string powerupName) 
@@ -272,10 +240,14 @@ public class Player : FlyingUnit
         TakeDamage();
     }
 
-
     private void PlaySound(AudioClip clip) 
     {
         _audioSource.clip = clip;
         _audioSource.Play();
+    }
+
+    public bool GetPowerup(string powerupName, bool includeName = true) 
+    {
+        return GameManager.gm.IsPowerupActive((includeName ? gameObject.name : "") + powerupName);
     }
 }

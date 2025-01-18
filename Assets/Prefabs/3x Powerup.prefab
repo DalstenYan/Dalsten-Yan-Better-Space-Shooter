@@ -134,9 +134,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 500b3f61c41ef9f4abcc8058c0ee31bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  powerupType: 1
   _speed: 3
   _powerupName: TripleScorePowerup
-  duration: 10
+  _duration: 5
 --- !u!95 &7979593712355367719
 Animator:
   serializedVersion: 3

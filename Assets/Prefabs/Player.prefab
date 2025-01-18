@@ -421,64 +421,17 @@ MonoBehaviour:
   _playerEngines:
   - {fileID: 4442777193496751694}
   - {fileID: 4442777193870176006}
+  _pickupSoundEffects:
+  - {fileID: 8300000, guid: 5ee343246919d2b4bba63ae629e95494, type: 3}
+  - {fileID: 8300000, guid: e22a32738c4fd1b45b8435b8195e0b75, type: 3}
   _laserSoundEffect: {fileID: 8300000, guid: 75676f361bdfeaf41a46623e95df3dbc, type: 3}
   _playerDamageEffect: {fileID: 8300000, guid: b8c6ef6d7b48be74d837e5bc4b6a0a6b, type: 3}
   _shieldPowerDownEffect: {fileID: 8300000, guid: 45acc4302a6ef1943ac5bdcd22fa6f12,
     type: 3}
-  _pickupSoundEffects:
-  - {fileID: 8300000, guid: 5ee343246919d2b4bba63ae629e95494, type: 3}
-  - {fileID: 8300000, guid: e22a32738c4fd1b45b8435b8195e0b75, type: 3}
   _takeDamageOnce: 1
   _firing: 0
   _playerInputAsset: {fileID: -944628639613478452, guid: ce6fd537167629043aadc9d07e07798d,
     type: 3}
-  onPlayerDeath:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 0}
-        m_MethodName: SetActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
-      - m_Target: {fileID: 0}
-        m_MethodName: OnPlayerDeath
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
-      - m_Target: {fileID: 0}
-        m_MethodName: GameOver
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
-      - m_Target: {fileID: 0}
-        m_MethodName: GameOver
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
 --- !u!114 &-1388942498817193430
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -567,6 +520,50 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 527fe32c-ff91-4e98-9bed-9425631453ba
     m_ActionName: Player/Pause[/Keyboard/escape]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 1e4e463a-feb2-48cf-980f-d99b147e5feb
+    m_ActionName: UI/Navigate[/Keyboard/w,/Keyboard/upArrow,/Keyboard/s,/Keyboard/downArrow,/Keyboard/a,/Keyboard/leftArrow,/Keyboard/d,/Keyboard/rightArrow]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 169bed37-8b41-4a01-8e51-d3f479621bff
+    m_ActionName: UI/Submit[/Keyboard/enter]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 703f2719-dab5-494e-be43-953c3c4cb460
+    m_ActionName: UI/Cancel[/Keyboard/escape]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: f023c88e-a315-4b79-a11c-b2ba77f48d21
+    m_ActionName: UI/Point[/Mouse/position]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 633d5538-bbe5-4d67-84cd-4911f9dfcd89
+    m_ActionName: UI/Click[/Mouse/leftButton]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 428125b3-097f-4777-b22b-41f16af1dfa2
+    m_ActionName: UI/ScrollWheel[/Mouse/scroll]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: edf3994b-a709-4a9d-acfe-62a51f11d940
+    m_ActionName: UI/MiddleClick[/Mouse/middleButton]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 7d40a6e6-92b1-49ed-a939-f281d6503929
+    m_ActionName: UI/RightClick[/Mouse/rightButton]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 21cbfa36-f8bf-4aec-a6c0-e07f97326c15
+    m_ActionName: UI/TrackedDevicePosition
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: f02cbe0a-1091-4ccf-856e-b71deb258e16
+    m_ActionName: UI/TrackedDeviceOrientation
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 30b03a8c-d2be-4bdb-89e3-e35b3b8f43e3
+    m_ActionName: UI/UnPause[/Keyboard/escape]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player

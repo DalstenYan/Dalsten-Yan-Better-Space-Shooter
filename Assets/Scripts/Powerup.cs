@@ -1,15 +1,22 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+enum PowerupEffect
+{
+    Singular,
+    Global
+}
 public class Powerup : MonoBehaviour
 {
+    [SerializeField]
+    PowerupEffect powerupType = PowerupEffect.Singular;
     [SerializeField]
     private float _speed = 3;
     [SerializeField]
     private string _powerupName;
     [SerializeField]
     private float _duration = 5;
+
 
     // Update is called once per frame
     void Update()
@@ -29,7 +36,14 @@ public class Powerup : MonoBehaviour
     {
         if (collision.CompareTag("Player"))
         {
-            collision.GetComponent<Player>().StartPowerup(_powerupName, _duration);
+            if (powerupType == PowerupEffect.Global)
+            {
+
+            }
+            else 
+            {
+                collision.GetComponent<Player>().StartPowerup(_powerupName, _duration);
+            }
             Destroy(gameObject);
         }
     }
