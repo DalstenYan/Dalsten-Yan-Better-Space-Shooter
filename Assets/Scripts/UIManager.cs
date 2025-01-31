@@ -6,6 +6,9 @@ using TMPro;
 
 public class UIManager : MonoBehaviour
 {
+    private readonly float fillDecremental = 1f / 60;
+
+    [Header("Score & Lives Section")]
     [SerializeField]
     private TextMeshProUGUI _scoreText;
     [SerializeField]
@@ -14,6 +17,16 @@ public class UIManager : MonoBehaviour
     private Image[] _currentLivesDisplays;
 
     private Dictionary<string, Image> _playerLivesImages;
+    //List of existing gameobjects that are counting down (maybe a prefab)
+    //Coroutines for WaitForSeconds animation
+
+    [Header("Powerup Section")]
+    [SerializeField]
+    private Transform _powerupBarTransform;
+    [SerializeField]
+    private List<GameObject> _powerupTimerPrefabs;
+
+    private Dictionary<string, GameObject> _existingPowerupAnimations;
 
     private void Start()
     {
@@ -41,5 +54,19 @@ public class UIManager : MonoBehaviour
         //due to removal of players on death, the index will change and will
         //target wrong lives image
         _playerLivesImages[hurtPlayerName].sprite = _lifeSprites[currentLives];
+    }
+
+    public void UpdatePowerupTimer(string powerupName) 
+    {
+        var powerupImage = _existingPowerupAnimations[powerupName].GetComponent<Image>();
+        if (powerupImage != null)
+            powerupImage.fillAmount -= fillDecremental;
+        else
+            Destroy(_existingPowerupAnimations[powerupName]);
+    }
+
+    public void StartDisplayingPowerup(string powerupName) 
+    {
+        _powerupTimerPrefabs.Find(x => x.name == powerupName);
     }
 }

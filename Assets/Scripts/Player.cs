@@ -48,13 +48,6 @@ public class Player : FlyingUnit
 
     private Vector2 moveDirection;
 
-    private void OnEnable()
-    {
-        //PlayerInput.all[0].SwitchCurrentControlScheme("KeyboardWASD", Keyboard.current);
-        //PlayerInput.all[1].SwitchCurrentControlScheme("KeyboardArrows", Keyboard.current);
-        
-    }
-
     public void OnMove(InputAction.CallbackContext context) => moveDirection = context.ReadValue<Vector2>();
 
     public void OnShoot(InputAction.CallbackContext context) 

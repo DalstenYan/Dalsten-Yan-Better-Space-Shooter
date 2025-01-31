@@ -22,13 +22,15 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private GameObject playerPrefab;
     [SerializeField]
-    private List<GameObject> players;
+    private List<GameObject> Players;
     private Dictionary<string, Coroutine> _playerPowerupCoroutines;
     private UIManager _ui;
 
     [Header("Events")]
     public UnityEvent endCurrentGame;
 
+    [SerializeField]
+    private GameObject PauseScreen;
     //delegate system
     private Coroutine _antiDoubleCallCoroutine;
 
@@ -38,6 +40,7 @@ public class GameManager : MonoBehaviour
         //PlayerInput.all[0].SwitchCurrentControlScheme("KeyboardWASD", Keyboard.current);
         //PlayerInput.all[1].SwitchCurrentControlScheme("KeyboardArrows", Keyboard.current);
         _playerPowerupCoroutines = new Dictionary<string, Coroutine>();
+        Players = new List<GameObject>(GameObject.FindGameObjectsWithTag("Player"));
         _ui = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
 
 
@@ -48,7 +51,6 @@ public class GameManager : MonoBehaviour
 
         //Singleton Assign
         gm = this;
-        players = new List<GameObject>(GameObject.FindGameObjectsWithTag("Player"));
     }
 
     #region GameFunctions
@@ -64,8 +66,8 @@ public class GameManager : MonoBehaviour
 
     public void PlayerDeath(GameObject defeatedPlayer) 
     {
-        players.Remove(defeatedPlayer);
-        if (players.Count == 0) 
+        Players.Remove(defeatedPlayer);
+        if (Players.Count == 0) 
         {
             _gameOver = true;
             endCurrentGame.Invoke();
@@ -82,21 +84,33 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void ManualPause() 
+    {
+        StartCoroutine(PauseAndUnpause());
+    }
+
     private IEnumerator PauseAndUnpause() 
     {
         yield return null;
         gm._gamePaused = !gm._gamePaused;
         Time.timeScale = gm._gamePaused ? 0 : 1;
-        foreach (var p in gm.players)
+        gm.PauseScreen.SetActive(gm._gamePaused);
+        foreach (var p in gm.Players)
         {
             p.GetComponent<PlayerInput>().SwitchCurrentActionMap(gm._gamePaused ? "UI" : "Player");
         }
-
         gm._antiDoubleCallCoroutine = null;
+    }
+
+    public void ManualQuit() 
+    {
+        Time.timeScale = 1;
+        SceneManager.LoadScene(0);
     }
 
     public void RestartGame()
     {
+        Time.timeScale = 1;
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
     #endregion
@@ -120,7 +134,11 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator PowerupTimer(string powerupName, float powerupDuration = 5)
     {
-        yield return new WaitForSeconds(powerupDuration);
+        float waitInterval = powerupDuration / 60f;
+        for (int i = 0; i < 60; i++) 
+        {
+            yield return new WaitForSeconds(waitInterval);
+        }
         Debug.Log(powerupName + " Ended!");
         _playerPowerupCoroutines.Remove(powerupName);
     }
@@ -133,7 +151,7 @@ public class GameManager : MonoBehaviour
     public void AddScore(int score, string sourceName) 
     {
         int ind = GetPlayerIndexByName(sourceName);
-        Player playerToScore = players[ind].GetComponent<Player>();
+        Player playerToScore = Players[ind].GetComponent<Player>();
         
         if (playerToScore.GetPowerup("TripleScorePowerup"))
         {
@@ -150,11 +168,12 @@ public class GameManager : MonoBehaviour
 
     public int GetPlayerIndexByName(string playerName) 
     {
-        return players.FindIndex(p => p.name == playerName);
+        return Players.FindIndex(p => p.name == playerName);
     }
 
     public List<GameObject> GetAllPlayers() 
     {
-        return players;
+        return Players;
     }
+
 }
