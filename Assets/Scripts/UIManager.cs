@@ -6,45 +6,67 @@ using TMPro;
 
 public class UIManager : MonoBehaviour
 {
-    [SerializeField]
-    private Player _player;
+    private readonly float fillDecremental = 1f / 60;
 
-    [SerializeField]
-    private int _score;
-
+    [Header("Score & Lives Section")]
     [SerializeField]
     private TextMeshProUGUI _scoreText;
+    [SerializeField]
+    private Sprite[] _lifeSprites;
+    [SerializeField]
+    private Image[] _currentLivesDisplays;
 
+    private Dictionary<string, Image> _playerLivesImages;
+    //List of existing gameobjects that are counting down (maybe a prefab)
+    //Coroutines for WaitForSeconds animation
+
+    [Header("Powerup Section")]
     [SerializeField]
-    private Sprite[] _liveSprites;
+    private Transform _powerupBarTransform;
     [SerializeField]
-    private Image _currentLivesImage;
+    private List<GameObject> _powerupTimerPrefabs;
+
+    private Dictionary<string, GameObject> _existingPowerupAnimations;
 
     private void Start()
     {
-        _player = GameObject.Find("Player").GetComponent<Player>();
-    }
-    public void AddScore(int score) 
-    {
-        //Edge case of if the player dies and a laser is still travelling
-        if (_player == null)
-            return;
+        //Creates a Dictionary of player names and their corresponding lives images
+        _playerLivesImages = new Dictionary<string, Image>();
+        int assignIndex = 0;
 
-        if (_player.IsPowerupActive("TripleScorePowerup"))
+        //iterate through all player's names and assign the value to an image ref
+        //this way, inputting the player's name will return the linked lives image
+        foreach (var plyr in GameManager.gm.GetAllPlayers()) 
         {
-            score *= 3;
+            _playerLivesImages[plyr.name] = _currentLivesDisplays[assignIndex];
+            assignIndex++;
         }
-        else if (_player.IsPowerupActive("DoubleScorePowerup"))
-        {
-            score *= 2;
-        }
-        
-        _score += score;
-        _scoreText.text = "Score: " + _score;
     }
 
-    public void UpdateLives(int currentLives) 
+    public void UpdateScore(int score) 
     {
-        _currentLivesImage.sprite = _liveSprites[currentLives];
+        _scoreText.text = "Score: " + score;
+    }
+
+    public void UpdateLives(int currentLives, string hurtPlayerName) 
+    {
+        //find a way to connect the lives images with the player index
+        //due to removal of players on death, the index will change and will
+        //target wrong lives image
+        _playerLivesImages[hurtPlayerName].sprite = _lifeSprites[currentLives];
+    }
+
+    public void UpdatePowerupTimer(string powerupName) 
+    {
+        var powerupImage = _existingPowerupAnimations[powerupName].GetComponent<Image>();
+        if (powerupImage != null)
+            powerupImage.fillAmount -= fillDecremental;
+        else
+            Destroy(_existingPowerupAnimations[powerupName]);
+    }
+
+    public void StartDisplayingPowerup(string powerupName) 
+    {
+        _powerupTimerPrefabs.Find(x => x.name == powerupName + "Visual");
     }
 }

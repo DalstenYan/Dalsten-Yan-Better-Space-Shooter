@@ -62,7 +62,7 @@ public class SpawnManager : MonoBehaviour
         StartCoroutine(SpawnPowerup());
     }
 
-    public void OnPlayerDeath() 
+    public void OnGameOver() 
     {
         StopAllCoroutines();
         for (int i = 0; i < _enemyParent.childCount; i++) 

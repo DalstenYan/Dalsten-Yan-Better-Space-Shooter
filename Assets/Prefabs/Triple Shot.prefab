@@ -98,7 +98,7 @@ PrefabInstance:
     - target: {fileID: 2017035853897786331, guid: 0f3d2591e1131b34a9b0069d182c2563,
         type: 3}
       propertyPath: m_Name
-      value: Laser
+      value: TripleShotLeftLaser
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0f3d2591e1131b34a9b0069d182c2563, type: 3}
@@ -173,7 +173,7 @@ PrefabInstance:
     - target: {fileID: 2017035853897786331, guid: 0f3d2591e1131b34a9b0069d182c2563,
         type: 3}
       propertyPath: m_Name
-      value: Laser (1)
+      value: TripleShotMiddleLaser
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0f3d2591e1131b34a9b0069d182c2563, type: 3}
@@ -248,7 +248,7 @@ PrefabInstance:
     - target: {fileID: 2017035853897786331, guid: 0f3d2591e1131b34a9b0069d182c2563,
         type: 3}
       propertyPath: m_Name
-      value: Laser (2)
+      value: TripleShotRightLaser
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0f3d2591e1131b34a9b0069d182c2563, type: 3}

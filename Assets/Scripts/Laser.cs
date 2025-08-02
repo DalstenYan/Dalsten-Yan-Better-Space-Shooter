@@ -6,20 +6,26 @@ public class Laser : MonoBehaviour
 {
     [SerializeField]
     private float _speed;
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    [SerializeField]
+    private string _sourceName;
 
     // Update is called once per frame
     void Update()
     {
         transform.Translate(_speed * Time.deltaTime * Vector3.up);
-        if (transform.position.y >= 7) 
+        if (transform.position.y >= 7 || transform.position.y <= -5) 
         {
-            Destroy(transform.parent != null ? transform.parent.gameObject : gameObject);
+            DestroyLasers();
         }
+    }
+
+    public void DestroyLasers() 
+    {
+        Destroy(transform.parent != null ? transform.parent.gameObject : gameObject);
+    }
+
+    public static string GetFiredSourceName(string firedLaser) 
+    {
+        return firedLaser.Substring(0, firedLaser.IndexOf('_'));
     }
 }
