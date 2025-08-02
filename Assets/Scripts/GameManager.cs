@@ -10,6 +10,9 @@ public class GameManager : MonoBehaviour
     [Header("Singleton Instance")]
     public static GameManager gm;
 
+    [SerializeField]
+    public GameManager test;
+
     [Header("Game Variables")]
     [SerializeField]
     private int _score;
@@ -23,7 +26,10 @@ public class GameManager : MonoBehaviour
     private GameObject playerPrefab;
     [SerializeField]
     private List<GameObject> Players;
+    //Decentralize this once again, since global powerups can
+    //communicate using singleton instance
     private Dictionary<string, Coroutine> _playerPowerupCoroutines;
+    private Dictionary<string, int> _playerIndividualScores;
     private UIManager _ui;
 
     [Header("Events")]
@@ -40,9 +46,14 @@ public class GameManager : MonoBehaviour
         //PlayerInput.all[0].SwitchCurrentControlScheme("KeyboardWASD", Keyboard.current);
         //PlayerInput.all[1].SwitchCurrentControlScheme("KeyboardArrows", Keyboard.current);
         _playerPowerupCoroutines = new Dictionary<string, Coroutine>();
+        _playerIndividualScores = new Dictionary<string, int>();
         Players = new List<GameObject>(GameObject.FindGameObjectsWithTag("Player"));
         _ui = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
 
+        foreach (var player in Players) 
+        {
+            _playerIndividualScores.Add(player.name, 0);
+        }
 
         for (int i = 0; i < PlayerInput.all.Count; i++) 
         {
@@ -51,7 +62,20 @@ public class GameManager : MonoBehaviour
 
         //Singleton Assign
         gm = this;
+        test = this;
     }
+
+    #region Debugging
+    [ContextMenu("Show All Coroutines")]
+    public void DebugAllCoroutines() 
+    {
+        Debug.Log("Dictionary Size: " + _playerPowerupCoroutines.Count);
+        foreach (var item in _playerPowerupCoroutines)
+        {
+            Debug.Log("Powerup Name (Key): " + item.Key + " || Powerup Coroutine: " + item.Value);
+        }
+    }
+    #endregion
 
     #region GameFunctions
 
@@ -76,11 +100,9 @@ public class GameManager : MonoBehaviour
 
     public void PauseGame(InputAction.CallbackContext context) 
     {
-        if (context.performed && gm._antiDoubleCallCoroutine == null) 
+        if (context.performed && _antiDoubleCallCoroutine == null) 
         {
-            gm._antiDoubleCallCoroutine =  gm.StartCoroutine(PauseAndUnpause());
-            //coroutines can't be called from callback contexts
-            //gotta figure out an alternate way to stop second input
+            _antiDoubleCallCoroutine =  StartCoroutine(PauseAndUnpause());
         }
     }
 
@@ -92,14 +114,14 @@ public class GameManager : MonoBehaviour
     private IEnumerator PauseAndUnpause() 
     {
         yield return null;
-        gm._gamePaused = !gm._gamePaused;
-        Time.timeScale = gm._gamePaused ? 0 : 1;
-        gm.PauseScreen.SetActive(gm._gamePaused);
-        foreach (var p in gm.Players)
+        _gamePaused = !_gamePaused;
+        Time.timeScale = _gamePaused ? 0 : 1;
+        PauseScreen.SetActive(_gamePaused);
+        foreach (var p in Players)
         {
-            p.GetComponent<PlayerInput>().SwitchCurrentActionMap(gm._gamePaused ? "UI" : "Player");
+            p.GetComponent<PlayerInput>().SwitchCurrentActionMap(_gamePaused ? "UI" : "Player");
         }
-        gm._antiDoubleCallCoroutine = null;
+        _antiDoubleCallCoroutine = null;
     }
 
     public void ManualQuit() 
@@ -115,30 +137,31 @@ public class GameManager : MonoBehaviour
     }
     #endregion
 
-    public void StartPlayerPowerup(string powerupName, float powerupDuration) 
+    public void StartPlayerPowerup(string powerupName, float powerupDuration, string playerName = "") 
     {
-
+        string truePowerupName = playerName + powerupName;
         //Set an out value for the POSSIBLY existing powerup
         //Check if the coroutine actually exists in the dictionary, if it does, stop the current coroutine
-        if (_playerPowerupCoroutines.TryGetValue(powerupName, out Coroutine activePowerupCouroutine))
+        if (_playerPowerupCoroutines.TryGetValue(truePowerupName, out Coroutine activePowerupCouroutine))
         {
-            Debug.Log(powerupName + " Stopped & Extended!");
+            Debug.Log(truePowerupName + " Stopped & Extended!");
             StopCoroutine(activePowerupCouroutine);
         }
-        else { Debug.Log(powerupName + " Started!"); }
+        else { Debug.Log(truePowerupName + " Started!"); }
 
         //In both edge cases, the coroutine will be started (or restarted) and assigned to the dictionary
-        _playerPowerupCoroutines[powerupName] = StartCoroutine(PowerupTimer(powerupName, powerupDuration));
+        _playerPowerupCoroutines[truePowerupName] = powerupDuration <= -1 ? null : StartCoroutine(PowerupTimer(truePowerupName, powerupDuration));
 
+    }
+
+    public void StartGlobalPowerup(string globalPowerupName, float globalPowerupDuration) 
+    {
+        StartPlayerPowerup(globalPowerupName, globalPowerupDuration);
     }
 
     private IEnumerator PowerupTimer(string powerupName, float powerupDuration = 5)
     {
-        float waitInterval = powerupDuration / 60f;
-        for (int i = 0; i < 60; i++) 
-        {
-            yield return new WaitForSeconds(waitInterval);
-        }
+        yield return new WaitForSeconds(powerupDuration);
         Debug.Log(powerupName + " Ended!");
         _playerPowerupCoroutines.Remove(powerupName);
     }
@@ -150,17 +173,21 @@ public class GameManager : MonoBehaviour
 
     public void AddScore(int score, string sourceName) 
     {
-        int ind = GetPlayerIndexByName(sourceName);
-        Player playerToScore = Players[ind].GetComponent<Player>();
-        
-        if (playerToScore.GetPowerup("TripleScorePowerup"))
+        //** For individual scoring if decided to be essential **
+        //int ind = GetPlayerIndexByName(sourceName);
+        //Player playerToScore = Players[ind].GetComponent<Player>();
+
+        if (IsPowerupActive("TripleScorePowerup"))
         {
             score *= 3;
         }
-        else if (playerToScore.GetPowerup("DoubleScorePowerup"))
+        else if (IsPowerupActive("DoubleScorePowerup"))
         {
             score *= 2;
         }
+
+        _playerIndividualScores[sourceName] += score;
+        Debug.Log(sourceName + ": " + _playerIndividualScores[sourceName]);
 
         _score += score;
         _ui.UpdateScore(_score);

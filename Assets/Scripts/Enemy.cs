@@ -15,7 +15,7 @@ public class Enemy : FlyingUnit
     // Start is called before the first frame update
     void Start()
     {
-        Debug.Log("cooldown time set: " + _cooldown + " seconds");
+        //Debug.Log("cooldown time set: " + _cooldown + " seconds");
         _enemyAnimator = GetComponent<Animator>();
     }
 
@@ -70,7 +70,8 @@ public class Enemy : FlyingUnit
         if (collision.CompareTag("Laser")) 
         {
             col.SetActive(false);
-            GameManager.gm.AddScore(_scoreValue, Laser.GetFiredSourceName(col.name));
+            string laserName = col.name.Contains("TripleShot") ? col.transform.parent.name : col.name;
+            GameManager.gm.AddScore(_scoreValue, Laser.GetFiredSourceName(laserName));
             Destroy(collision.gameObject);
             TakeDamage();
         }

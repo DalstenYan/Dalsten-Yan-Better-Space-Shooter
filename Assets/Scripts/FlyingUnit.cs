@@ -21,7 +21,7 @@ public abstract class FlyingUnit : MonoBehaviour
 
     protected abstract void CalculateMovement();
     protected abstract void ShootLaser();
-    [ContextMenu("Hurt")]
+    
     public abstract void TakeDamage();
     protected abstract IEnumerator OnDeath();
 

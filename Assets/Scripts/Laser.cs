@@ -24,8 +24,8 @@ public class Laser : MonoBehaviour
         Destroy(transform.parent != null ? transform.parent.gameObject : gameObject);
     }
 
-    public static string GetFiredSourceName(string laserName) 
+    public static string GetFiredSourceName(string firedLaser) 
     {
-        return laserName.Substring(0, laserName.IndexOf('_'));
+        return firedLaser.Substring(0, firedLaser.IndexOf('_'));
     }
 }

@@ -13,6 +13,8 @@ public class Player : FlyingUnit
     [Header("Variable Stats")]
     [SerializeField]
     private float _powerupSpeed = 8.5f;
+    [SerializeField]
+    private float _invincibilityDuration = 2f;
 
     [Header("Prefabs")]
     [SerializeField]
@@ -43,6 +45,7 @@ public class Player : FlyingUnit
     private Coroutine hitCouroutine;
     private AudioSource _audioSource;
     private Animator playerAnimator;
+    private SpriteRenderer _playerSprite;
 
     private Dictionary<string, Coroutine> _powerupCoroutines;
 
@@ -68,6 +71,8 @@ public class Player : FlyingUnit
         _powerupCoroutines = new Dictionary<string, Coroutine>();
         _audioSource = GetComponent<AudioSource>();
         playerAnimator = GetComponent<Animator>();
+        _playerSprite = GetComponent<SpriteRenderer>();
+
     }
 
     protected override void CalculateMovement ()
@@ -107,7 +112,7 @@ public class Player : FlyingUnit
             createdLaser.name = gameObject.name + "_" + createdLaser.name;
         }
     }
-
+    [ContextMenu("Hurt")]
     public override void TakeDamage() 
     {
         if (GetPowerup("ShieldPowerup")) 
@@ -135,10 +140,27 @@ public class Player : FlyingUnit
         }
 
         //Play Visual and Audio Effects
+        StartCoroutine(InvincibilityFrames());
         PlaySound(_playerDamageEffect);
         int engineIndex = Random.Range(0, _playerEngines.Count);
         _playerEngines[engineIndex].SetActive(true);
         _playerEngines.RemoveAt(engineIndex);
+    }
+    private IEnumerator InvincibilityFrames() 
+    {
+        //Disable collision so no more damage can be taken
+        GetComponent<BoxCollider2D>().enabled = false;
+        Color defaultColor = _playerSprite.color;
+        Color fadedColor = new Color(_playerSprite.color.r, _playerSprite.color.g, _playerSprite.color.b, 0.1f);
+        // 8/2/2025: also make thruster sprite dissapear!
+        float countUpTimer = 0f;
+        while (countUpTimer < _invincibilityDuration) 
+        {
+            countUpTimer += Time.deltaTime;
+            _playerSprite.color = _playerSprite.color.Equals(defaultColor) ? fadedColor : defaultColor;
+            yield return new WaitForEndOfFrame();
+        }
+        _playerSprite.color = defaultColor;
 
         GetComponent<BoxCollider2D>().enabled = true;
     }
@@ -176,12 +198,9 @@ public class Player : FlyingUnit
                     Debug.LogWarning("Unrecognized powerup, check your powerup strings");
                     break;
             }
-            return;
         }
 
-        powerupName = gameObject.name + powerupName;
-
-        GameManager.gm.StartPlayerPowerup(powerupName, powerupDuration);
+        GameManager.gm.StartPlayerPowerup(powerupName, powerupDuration, gameObject.name);
     }
 
     private AudioClip GetPowerupSFX(string powerupName) 

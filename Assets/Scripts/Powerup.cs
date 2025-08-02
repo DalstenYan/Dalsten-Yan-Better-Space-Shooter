@@ -38,7 +38,7 @@ public class Powerup : MonoBehaviour
         {
             if (powerupType == PowerupEffect.Global)
             {
-
+                GameManager.gm.StartGlobalPowerup(_powerupName, _duration);
             }
             else 
             {

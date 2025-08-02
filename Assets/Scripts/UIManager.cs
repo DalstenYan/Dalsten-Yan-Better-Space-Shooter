@@ -67,6 +67,6 @@ public class UIManager : MonoBehaviour
 
     public void StartDisplayingPowerup(string powerupName) 
     {
-        _powerupTimerPrefabs.Find(x => x.name == powerupName);
+        _powerupTimerPrefabs.Find(x => x.name == powerupName + "Visual");
     }
 }
